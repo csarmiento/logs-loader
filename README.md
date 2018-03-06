@@ -61,7 +61,7 @@ CREATE TABLE blocked_ips (
 
 The application is wired with a DB configuration file (`loader/weblogsloader/src/main/resources/config.properties`) that will not work by default.
 
-```
+```properties
 # MySQL properties
 mysql.user=root
 mysql.password=p0p01234
@@ -83,7 +83,7 @@ affect the application performance.
 
 Run `./gradlew build` from the `loader` directory and do:
 
-```
+```bash
 $ cd weblogsloader/build/distributions
 $ unzip weblogsloader-1.0.zip
 ```
@@ -93,14 +93,14 @@ The ZIP (*weblogsloader-1.0.zip*) or TAR (*weblogsloader-1.0.tar*) file can also
 ## Usage
 After unpacking the distribution you can
 
-```
+```bash
 $ cd weblogsloader-1.0
 $ ./bin/weblogsloader --startDate=2017-01-01.00:00:00 --duration=daily --threshold=500 --accesslog=/Users/camilo/Desktop/test/loader/weblogsloader/src/test/resources/access.log
 ```
 
 This is an example of the output for the previous command.
 
-```
+```bash
 21:41:58.165 [main] INFO  c.n.c.s.URLConfigurationSource - URLs to be used as dynamic configuration source: [file:/Users/camilo/Desktop/test/loader/weblogsloader/build/resources/main/config.properties]
 21:41:58.195 [main] INFO  c.n.c.DynamicPropertyFactory - DynamicPropertyFactory is initialized with configuration sources: com.netflix.config.ConcurrentCompositeConfiguration@6eda5c9
 21:41:58.216 [main] INFO  c.z.h.HikariDataSource - HikariPool-1 - Started.
