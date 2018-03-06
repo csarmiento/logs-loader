@@ -1,0 +1,28 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+dependencies {
+    compile 'com.zaxxer:HikariCP'
+    compile 'com.google.guava:guava'
+    compile 'com.google.inject:guice'
+    compile "com.beust:jcommander"
+    compile 'com.netflix.archaius:archaius-core'
+
+    testCompile 'junit:junit'
+
+    runtime 'ch.qos.logback:logback-classic'
+    runtime 'mysql:mysql-connector-java'
+}
+
+distZip {
+    from project(':docs').asciidoctor, {
+        into "${project.name}-${version}"
+    }
+}
+distTar {
+    from project(':docs').asciidoctor, {
+        into "${project.name}-${version}"
+    }
+}
+
+mainClassName = 'com.camilo.app.Application'

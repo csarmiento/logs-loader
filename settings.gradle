@@ -1,0 +1,5 @@
+rootProject.name = 'loader'
+
+include 'weblogsloader'
+include 'db'
+include 'docs'

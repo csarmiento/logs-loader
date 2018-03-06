@@ -1,0 +1,53 @@
+plugins {
+    id 'org.asciidoctor.convert' version '1.5.6' apply false
+    id 'nebula.dependency-recommender' version '5.0.0'
+    id 'nebula.maven-resolved-dependencies' version '5.1.5'
+}
+
+// Dependency versions for everything are specified here and injected by
+// nebula.dependency-recommender (https://github.com/nebula-plugins/nebula-dependency-recommender-plugin)
+// at the use site for any dependency that doesn't specify a version.
+//
+// With the exception of buildscript & plugin versions, which are evaluated before this plugin
+// is active, if you are manually specifying a version elsewhere, you are probably doing it wrong.
+dependencyRecommendations {
+    strictMode = true
+
+    map recommendations: [
+            // testing
+            'junit:junit'                       : '4.12',
+
+            // db driver
+            'mysql:mysql-connector-java'        : '5.1.45',
+
+            // Third party libraries
+            'com.zaxxer:HikariCP'               : '2.4.5',
+            'com.google.guava:guava'            : '24.0-jre',
+            'com.google.inject:guice'           : '4.1.0',
+
+            // logging
+            'org.slf4j:slf4j-api'               : '1.7.9',
+            'ch.qos.logback:logback-classic'    : '1.2.3',
+
+            // cli
+            'com.beust:jcommander'              : '1.71',
+
+            // config
+            'com.netflix.archaius:archaius-core': '0.7.6'
+    ]
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+configure(subprojects) {
+    apply plugin: 'nebula.dependency-recommender'
+    apply plugin: 'nebula.maven-resolved-dependencies'
+}
+
+subprojects {
+    version = '1.0'
+}

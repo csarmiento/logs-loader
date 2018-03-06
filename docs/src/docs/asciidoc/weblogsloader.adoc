@@ -1,0 +1,131 @@
+= Web logs loader Command-line Application
+
+An application to load and query web access logs, with the following format:
+
+[listing]
+----
+2017-01-01 00:00:11.763|192.168.234.82|"GET / HTTP/1.1"|200|"swcd (unknown version) CFNetwork/808.2.16 Darwin/15.6.0"
+2017-01-01 00:00:21.164|192.168.234.82|"GET / HTTP/1.1"|200|"swcd (unknown version) CFNetwork/808.2.16 Darwin/15.6.0"
+2017-01-01 00:00:23.003|192.168.169.194|"GET / HTTP/1.1"|200|"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393"
+----
+
+The source code uses `gradle` to be compiled. You can get more info https://gradle.org/[here].
+
+== Data Base Generation
+
+The source code of the application can generate the tables to allow it to work.
+
+Under the `loader/db/` directory, you will find the `build.gradle` file. Its current contents are:
+
+[listing]
+----
+buildscript {
+    dependencies {
+        classpath 'mysql:mysql-connector-java:5.1.45'
+        classpath 'com.h2database:h2:1.4.191'
+    }
+}
+
+plugins {
+    id "org.flywaydb.flyway" version "5.0.7"
+}
+
+flyway {
+    url = 'jdbc:mysql://localhost:3306'
+    user = 'root'
+    password = 'p0p01234'
+    schemas = ['loader']
+}
+----
+
+You can edit the file under the `flyway` section to properly configure your MySQL server.
+
+After that, you can run `./gradlew flywayMigrate`. If everything is properly configured, your DB should
+have now a `loader` schema with the following tables in it:
+
+[listing]
+----
+CREATE TABLE web_server_access (
+  access_timestamp TIMESTAMP,
+  ip               VARCHAR(15),
+  request          TEXT
+);
+
+CREATE TABLE blocked_ips (
+  ip             VARCHAR(15),
+  requests_made  INT,
+  duration       VARCHAR(10),
+  start_date     TIMESTAMP,
+  blocked_reason TEXT
+);
+----
+
+== Configuration
+
+The application is wired with a DB configuration file (`loader/weblogsloader/src/main/resources/config.properties`) that will not work by default.
+
+----
+# MySQL properties
+mysql.user=root
+mysql.password=p0p01234
+mysql.url=jdbc:mysql://localhost:3306
+mysql.connection.minimum.idle=1
+mysql.connection.maximum.connections=10
+mysql.connection.timeout=30000
+mysql.idle.timeout=600000
+mysql.default.database=loader
+mysql.connection.max.lifetime=1800000
+----
+
+You will need to edit the file to match your database configuration.
+
+Please replace the fields `mysql.user`, `mysql.password` and `mysql.url`, as changing other parameters can
+affect the application performance.
+
+== Installation
+
+Run `./gradlew build` from the `loader` directory and do:
+
+----
+$ cd weblogsloader/build/distributions
+$ unzip weblogsloader-1.0.zip
+----
+
+The ZIP (*weblogsloader-1.0.zip*) or TAR (*weblogsloader-1.0.tar*) file can also be unpacked in another folder of your preference.
+
+== Usage
+After unpacking the distribution you can
+
+[listing]
+----
+$ cd weblogsloader-1.0
+$ ./bin/weblogsloader --startDate=2017-01-01.00:00:00 --duration=daily --threshold=500 --accesslog=/Users/camilo/Desktop/test/loader/weblogsloader/src/test/resources/access.log
+----
+
+This is an example of the output for the previous command.
+
+----
+21:41:58.165 [main] INFO  c.n.c.s.URLConfigurationSource - URLs to be used as dynamic configuration source: [file:/Users/camilo/Desktop/test/loader/weblogsloader/build/resources/main/config.properties]
+21:41:58.195 [main] INFO  c.n.c.DynamicPropertyFactory - DynamicPropertyFactory is initialized with configuration sources: com.netflix.config.ConcurrentCompositeConfiguration@6eda5c9
+21:41:58.216 [main] INFO  c.z.h.HikariDataSource - HikariPool-1 - Started.
+21:41:58.660 [main] INFO  c.c.l.WebLogsLoader - Processing file: /Users/camilo/Desktop/test/loader/weblogsloader/src/test/resources/access.log
+21:42:21.954 [main] INFO  c.c.a.Application - Loaded file to database in 23 seconds
+21:42:21.954 [main] INFO  c.c.a.Application - IPs that made more than 500 requests starting from 2017-01-01T00:00 (daily)
+21:42:22.241 [main] INFO  c.c.a.Application - IP: 192.168.102.136, Requests made:513
+21:42:22.241 [main] INFO  c.c.a.Application - IP: 192.168.129.191, Requests made:747
+21:42:22.241 [main] INFO  c.c.a.Application - IP: 192.168.143.177, Requests made:729
+21:42:22.241 [main] INFO  c.c.a.Application - IP: 192.168.162.248, Requests made:623
+21:42:22.241 [main] INFO  c.c.a.Application - IP: 192.168.185.164, Requests made:528
+21:42:22.241 [main] INFO  c.c.a.Application - IP: 192.168.199.209, Requests made:640
+21:42:22.241 [main] INFO  c.c.a.Application - IP: 192.168.203.111, Requests made:601
+21:42:22.241 [main] INFO  c.c.a.Application - IP: 192.168.206.141, Requests made:536
+21:42:22.241 [main] INFO  c.c.a.Application - IP: 192.168.219.10, Requests made:533
+21:42:22.242 [main] INFO  c.c.a.Application - IP: 192.168.31.26, Requests made:591
+21:42:22.242 [main] INFO  c.c.a.Application - IP: 192.168.33.16, Requests made:584
+21:42:22.242 [main] INFO  c.c.a.Application - IP: 192.168.38.77, Requests made:743
+21:42:22.242 [main] INFO  c.c.a.Application - IP: 192.168.51.205, Requests made:610
+21:42:22.242 [main] INFO  c.c.a.Application - IP: 192.168.52.153, Requests made:541
+21:42:22.242 [main] INFO  c.c.a.Application - IP: 192.168.62.176, Requests made:582
+21:42:22.242 [main] INFO  c.c.a.Application - Inserting blocked IPs to DB
+----
+
